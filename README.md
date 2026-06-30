@@ -1,3 +1,9 @@
+## Metric Edition
+This fork of BirdNET-Pi has been modified to support native metric units (Celsius and km/h). 
+
+- **Status:** Metric conversion implemented for weather telemetry and dashboard visualizations.
+- **Details:** See [EXPLANATION.md](EXPLANATION.md) for a technical breakdown of changes.
+##
 <h1 align="center"><a href="https://github.com/mcguirepr89/BirdNET-Pi/blob/main/LICENSE">Review the license!!</a></h1>
 <h1 align="center">You may not use BirdNET-Pi to develop a commercial product!!!!</h1>
 <h1 align="center">
