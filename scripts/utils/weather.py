@@ -20,7 +20,7 @@ def update_weather():
         return
 
     # Use Open-Meteo to fetch the past day and current forecast day
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,weather_code,is_day,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&past_days=1&forecast_days=1&timezone=auto"
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,weather_code,is_day,wind_speed_10m,wind_direction_10m&temperature_unit=celsius&wind_speed_unit=kmh&past_days=1&forecast_days=1&timezone=auto"
     
     try:
         response = requests.get(url, timeout=15)

@@ -368,16 +368,16 @@ if ($subview == 'environmental') {
     $wmo_codes = [0 => 'Clear sky', 1 => 'Mostly clear', 2 => 'Partly cloudy', 3 => 'Overcast', 45 => 'Fog', 48 => 'Rime fog', 51 => 'Light drizzle', 53 => 'Moderate drizzle', 55 => 'Dense drizzle', 61 => 'Slight rain', 63 => 'Moderate rain', 65 => 'Heavy rain', 71 => 'Slight snow', 73 => 'Moderate snow', 75 => 'Heavy snow', 80 => 'Slight showers', 81 => 'Moderate showers', 82 => 'Violent showers', 95 => 'Thunderstorm', 96 => 'Thunderstorm + hail', 99 => 'Thunderstorm + heavy hail'];
     $has_weather = (db_query_single_safe($db, "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='weather'", 0, 'insights weather table exists') > 0) && (db_query_single_safe($db, "SELECT COUNT(*) FROM weather", 0, 'insights weather row count') > 0);
     if ($has_weather) {
-        $temp_res = db_query_safe($db, "SELECT CASE WHEN w.Temp IS NULL THEN 'Unknown' WHEN w.Temp < 32 THEN 'Below 32°F' WHEN w.Temp < 46 THEN '32–45°F' WHEN w.Temp < 56 THEN '46–55°F' WHEN w.Temp < 66 THEN '56–65°F' WHEN w.Temp < 76 THEN '66–75°F' WHEN w.Temp < 86 THEN '76–85°F' WHEN w.Temp < 96 THEN '86–95°F' ELSE 'Above 95°F' END as bracket, COUNT(*) as det_count, COUNT(DISTINCT d.Sci_Name) as species_count, ROUND(AVG(w.Temp), 1) as avg_temp FROM detections d INNER JOIN weather w ON d.Date = w.Date AND CAST(substr(d.Time, 1, 2) AS INTEGER) = w.Hour GROUP BY bracket", 'insights weather temperature brackets');
+$temp_res = db_query_safe($db, "SELECT CASE WHEN w.Temp IS NULL THEN 'Unknown' WHEN w.Temp < 0 THEN 'Below 0°C' WHEN w.Temp <= 7 THEN '0–7°C' WHEN w.Temp <= 13 THEN '8–13°C' WHEN w.Temp <= 18 THEN '14–18°C' WHEN w.Temp <= 24 THEN '19–24°C' WHEN w.Temp <= 29 THEN '25–29°C' WHEN w.Temp <= 35 THEN '30–35°C' ELSE 'Above 35°C' END as bracket, count(*) as det_count, count(DISTINCT w.Sci_Name) as species_count FROM weather w JOIN detections d ON w.Date = d.Date AND w.Hour = CAST(SUBSTR(d.Time, 1, 2) AS INTEGER) GROUP BY bracket");
         $master_brackets = [
-            'Below 32°F' => ['bracket' => 'Below 32°F', 'det_count' => 0, 'species_count' => 0],
-            '32–45°F' => ['bracket' => '32–45°F', 'det_count' => 0, 'species_count' => 0],
-            '46–55°F' => ['bracket' => '46–55°F', 'det_count' => 0, 'species_count' => 0],
-            '56–65°F' => ['bracket' => '56–65°F', 'det_count' => 0, 'species_count' => 0],
-            '66–75°F' => ['bracket' => '66–75°F', 'det_count' => 0, 'species_count' => 0],
-            '76–85°F' => ['bracket' => '76–85°F', 'det_count' => 0, 'species_count' => 0],
-            '86–95°F' => ['bracket' => '86–95°F', 'det_count' => 0, 'species_count' => 0],
-            'Above 95°F' => ['bracket' => 'Above 95°F', 'det_count' => 0, 'species_count' => 0]
+            'Below 0°C' => ['bracket' => 'Below 0°C', 'det_count' => 0, 'species_count' => 0],
+            '0–7°C' => ['bracket' => '0–7°C', 'det_count' => 0, 'species_count' => 0],
+            '8–13°C' => ['bracket' => '8–13°C', 'det_count' => 0, 'species_count' => 0],
+            '14–18°C' => ['bracket' => '14–18°C', 'det_count' => 0, 'species_count' => 0],
+            '19–24°C' => ['bracket' => '19–24°C', 'det_count' => 0, 'species_count' => 0],
+            '25–29°C' => ['bracket' => '25–29°C', 'det_count' => 0, 'species_count' => 0],
+            '30–35°C' => ['bracket' => '30–35°C', 'det_count' => 0, 'species_count' => 0],
+            'Above 35°C' => ['bracket' => 'Above 35°C', 'det_count' => 0, 'species_count' => 0]
         ];
         while($row = db_fetch_assoc_safe($temp_res)) {
             if (isset($master_brackets[$row['bracket']])) {
@@ -1424,7 +1424,7 @@ $db->close();
                 <div class="insights-stats-item" style="display: flex; flex-direction: row; align-items: stretch; justify-content: space-between; gap: 0; padding: 16px 20px; margin-bottom: 8px;">
                     <!-- Speed & Species Mix -->
                     <div style="flex: 0 0 220px; padding-right: 25px; border-right: 1.5px solid var(--border); display: flex; flex-direction: column; justify-content: center;">
-                        <div class="insights-stats-name" style="font-size: 1.1em; margin-bottom: 2px; white-space: nowrap;"><?php echo $w['emoji']; ?> <?php echo $bracket; ?> mph</div>
+                        <div class="insights-stats-name" style="font-size: 1.1em; margin-bottom: 2px; white-space: nowrap;"><?php echo $w['emoji']; ?> <?php echo $bracket; ?> km/h</div>
                         <div style="font-size: 0.8em; color: var(--text-muted); white-space: nowrap;">
                             <?php echo $w['det_count'] > 0 ? $w['species_count'] . ' species active' : 'No species recorded'; ?>
                         </div>
@@ -1474,9 +1474,9 @@ $db->close();
             <div class="insights-stats-item <?php echo $rank_temp > 10 ? 'hidden-item' : ''; ?>">
                 <div>
                     <div class="insights-stats-name" style="margin-bottom: 2px;"><?php echo $sp['Com_Name']; ?></div>
-                    <div style="font-size: 0.8em; color: var(--text-muted);">Range: <?php echo $sp['min_temp']; ?>°F – <?php echo $sp['max_temp']; ?>°F · <?php echo number_format($sp['cnt']); ?> detections</div>
+                    <div style="font-size: 0.8em; color: var(--text-muted);">Range: <?php echo $sp['min_temp']; ?>°C – <?php echo $sp['max_temp']; ?>°C · <?php echo number_format($sp['cnt']); ?> detections</div>
                 </div>
-                <span class="insights-stats-count">~<?php echo $sp['avg_temp']; ?>°F</span>
+                <span class="insights-stats-count">~<?php echo $sp['avg_temp']; ?>°C</span>
             </div>
             <?php $rank_temp++; endforeach; ?>
             <?php endif; ?>
@@ -1866,7 +1866,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderWidth: 1,
                     yAxisID: 'y-dets'
                 }, {
-                    label: 'Avg Temp (°F)',
+                    label: 'Avg Temp (°C)',
                     type: 'line',
                     data: <?php echo $temp_trend_temps; ?>,
                     borderColor: '#f59e0b',
@@ -1883,7 +1883,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     yAxes: [
                         { id: 'y-dets', position: 'left', ticks: { beginAtZero: true, fontColor: fontColor }, scaleLabel: { display: true, labelString: 'Detections', fontColor: fontColor } },
-                        { id: 'y-temp', position: 'right', ticks: { fontColor: '#f59e0b' }, scaleLabel: { display: true, labelString: 'Temp (°F)', fontColor: '#f59e0b' }, gridLines: { drawOnChartArea: false } }
+                        { id: 'y-temp', position: 'right', ticks: { fontColor: '#f59e0b' }, scaleLabel: { display: true, labelString: 'Temp (°C)', fontColor: '#f59e0b' }, gridLines: { drawOnChartArea: false } }
                     ],
                     xAxes: [{ ticks: { fontColor: fontColor, maxRotation: 45, minRotation: 0 } }]
                 }
